@@ -1,0 +1,54 @@
+{
+  "premise": [
+    "Coffee is the fuel that powers the modern world.",
+    "Without coffee, civilization would still be in the stone age.",
+    "Coffee beans are basically magical energy crystals.",
+    "The best part of waking up is knowing coffee exists.",
+    "Coffee doesn't ask questions, it just gets things done.",
+    "Every great invention was probably fueled by coffee.",
+    "Coffee is proof that good things come in small packages.",
+    "The universe runs on coffee and good intentions."
+  ],
+  "seed_words": ["coffee", "world", "magic"],
+  "words": [
+    {
+      "word": "coffee",
+      "lines": [
+        "Coffee is a liquid hug in a mug.",
+        "Coffee transforms zombies into productive humans.",
+        "Coffee is the only addiction that makes you more social.",
+        "Coffee beans are nature's way of saying 'you got this'.",
+        "Coffee is the answer to everything, even when you don't know the question.",
+        "Coffee doesn't just wake you up, it wakes up your soul.",
+        "Coffee is the bridge between 'I can't' and 'I did'.",
+        "Coffee is proof that miracles come in ceramic cups."
+      ]
+    },
+    {
+      "word": "world",
+      "lines": [
+        "The world is just a giant coffee shop with really weird customers.",
+        "World peace would be easier if everyone had their morning coffee.",
+        "The world spins faster after a good cup of coffee.",
+        "The world is divided into two types of people: coffee drinkers and the wrong.",
+        "The world's problems would be solved if everyone had coffee breaks.",
+        "The world is a better place because coffee exists.",
+        "The world makes more sense after the second cup of coffee.",
+        "The world is basically just a very expensive coffee shop."
+      ]
+    },
+    {
+      "word": "magic",
+      "lines": [
+        "Coffee is the closest thing to magic that exists in the real world.",
+        "The magic happens when coffee meets Monday morning.",
+        "Coffee is magic that you can drink and still drive legally.",
+        "The most magical moment is the first sip of morning coffee.",
+        "Coffee turns ordinary moments into magical ones.",
+        "Coffee is the magic potion that makes adults functional.",
+        "The real magic is how coffee makes everything better.",
+        "Coffee is magic that comes in a convenient liquid form."
+      ]
+    }
+  ]
+}

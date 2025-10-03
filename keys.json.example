@@ -1,0 +1,5 @@
+{
+  "openai": "sk-proj-your-openai-key-here",
+  "anthropic": "sk-ant-your-anthropic-key-here",
+  "_comment": "Copy this file to keys.json and add your actual API keys. DO NOT commit keys.json to version control!"
+}
