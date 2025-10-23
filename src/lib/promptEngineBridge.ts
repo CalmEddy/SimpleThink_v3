@@ -8,7 +8,7 @@
 
 import type { SemanticGraphLite } from "./semanticGraphLite.js";
 import type { TemplateDoc, PhraseBlock, PhraseToken, POS } from "../types/index.js";
-import { parseTextPatternsToUTA } from "../components/ComposerEditor.js";
+import { parseTextPatternsToUTA } from "./composer.js";
 import { convertTemplateDocToUnified } from "./composer.js";
 import { realizeTemplate } from "./fillTemplate.js";
 import { TemplateStore } from "./templateStore";

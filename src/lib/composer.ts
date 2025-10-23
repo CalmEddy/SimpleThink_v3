@@ -1,4 +1,17 @@
-import type { TemplateDoc, TemplateBlock, PhraseToken, POS, WordNode, PhraseNode, AnalyzedToken, MorphFeature, TextBlock, PhraseBlock, UnifiedTemplate, TemplateToken } from '../types';
+import type {
+  TemplateDoc,
+  TemplateBlock,
+  PhraseToken,
+  POS,
+  WordNode,
+  PhraseNode,
+  AnalyzedToken,
+  MorphFeature,
+  TextBlock,
+  PhraseBlock,
+  UnifiedTemplate,
+  TemplateToken
+} from '../types';
 import type { SemanticGraphLite } from './semanticGraphLite';
 import { wordBank } from './templates'; // fallback bank
 import { TenseConverter } from './tenseConverter';
@@ -13,6 +26,161 @@ export interface GenerateOptions {
   // Optional: let caller override bank or sampling
   bank?: Partial<Record<POS, string[]>>;
 }
+
+// === TemplateDoc helpers shared across TemplateLab/Composer ===
+
+export function convertTemplateDocToText(doc: TemplateDoc): string {
+  const parts: string[] = [];
+
+  for (const block of doc.blocks) {
+    if (block.kind === 'text') {
+      const textBlock = block as TextBlock;
+      if (textBlock.text.trim()) {
+        parts.push(textBlock.text);
+      }
+    } else if (block.kind === 'phrase') {
+      const phraseBlock = block as PhraseBlock;
+
+      const allSlots =
+        phraseBlock.tokens.length > 0 &&
+        phraseBlock.tokens.every(token => token.randomize && !!token.pos);
+
+      if (allSlots) {
+        const pattern = phraseBlock.tokens.map(token => token.pos).join('-');
+        parts.push(`[CHUNK:[${pattern}]]`);
+        continue;
+      }
+
+      const phrasePattern = phraseBlock.tokens
+        .map(token => {
+          if (token.randomize && token.pos) {
+            const morph = token.morph && token.morph !== 'base' ? `:${token.morph}` : '';
+            const label = token.slotLabel ? `#${token.slotLabel}` : '';
+            return `[${token.pos}${morph}${label}]`;
+          }
+          return token.text;
+        })
+        .join(' ');
+
+      parts.push(phrasePattern);
+    }
+  }
+
+  return parts.join(' ').trim();
+}
+
+export const parseTextPatternsToUTA = async (
+  doc: TemplateDoc,
+  _graph?: SemanticGraphLite
+): Promise<TemplateDoc> => {
+  const parsedBlocks: TemplateBlock[] = [];
+
+  for (const block of doc.blocks) {
+    if (block.kind === 'text') {
+      const textBlock = block as TextBlock;
+      const text = textBlock.text;
+
+      const CHUNK = /\[CHUNK:\[([A-Za-z0-9:]+(?:-[A-Za-z0-9:]+)*)\]\]/g;
+      const SLOT = /\[([A-Za-z]+)(\d+)?(?::([A-Za-z_]+))?(?:#([A-Za-z0-9_]+))?\]/g;
+
+      const tplTokens: TemplateToken[] = [];
+      let cursor = 0;
+
+      const pushLiteral = (input: string) => {
+        if (!input) return;
+        tplTokens.push({ kind: 'literal', surface: input });
+      };
+
+      while (cursor < text.length) {
+        CHUNK.lastIndex = cursor;
+        SLOT.lastIndex = cursor;
+
+        const nextChunk = CHUNK.exec(text);
+        const nextSlot = SLOT.exec(text);
+
+        const nextMatch = [nextChunk, nextSlot]
+          .filter(Boolean)
+          .sort((a, b) => (a!.index - b!.index))[0] as RegExpExecArray | undefined;
+
+        if (!nextMatch) {
+          pushLiteral(text.slice(cursor));
+          break;
+        }
+
+        if (nextMatch.index > cursor) {
+          pushLiteral(text.slice(cursor, nextMatch.index));
+        }
+
+        if (nextMatch === nextChunk && nextChunk) {
+          const inner = nextChunk[1] ?? '';
+          const tags = inner.split('-').map(part => part.trim()).filter(Boolean);
+
+          tags.forEach(raw => {
+            const match = /^([A-Za-z]+)(\d+)?(?::([A-Za-z_]+))?(?:#([A-Za-z0-9_]+))?$/.exec(raw);
+            const base = (match?.[1] ?? 'NOUN').toUpperCase();
+            const bind = match?.[2] ?? match?.[4] ?? undefined;
+            const morph = match?.[3]?.toLowerCase();
+            const pos = base === 'PARTICIPLE' ? 'VERB' : base;
+            tplTokens.push({ kind: 'slot', pos: pos as POS, morph: morph as MorphFeature, bindId: bind });
+          });
+
+          cursor = CHUNK.lastIndex;
+          continue;
+        }
+
+        if (nextMatch === nextSlot && nextSlot) {
+          const base = (nextSlot[1] ?? 'NOUN').toUpperCase();
+          const bind = nextSlot[2] ?? nextSlot[4] ?? undefined;
+          const morph = nextSlot[3]?.toLowerCase();
+          const pos = base === 'PARTICIPLE' ? 'VERB' : base;
+
+          tplTokens.push({ kind: 'slot', pos: pos as POS, morph: morph as MorphFeature, bindId: bind });
+          cursor = SLOT.lastIndex;
+          continue;
+        }
+      }
+
+      if (tplTokens.length > 0) {
+        const phraseTokens: PhraseToken[] = tplTokens.map(token => {
+          if (token.kind === 'literal') {
+            return {
+              text: token.surface,
+              randomize: false,
+              slotLabel: null,
+              lemma: token.surface,
+              morph: null
+            } satisfies PhraseToken;
+          }
+
+          return {
+            text: `[${token.pos}]`,
+            lemma: '',
+            pos: token.pos,
+            posSet: [token.pos],
+            randomize: true,
+            slotLabel: token.bindId ?? null,
+            morph: token.morph ?? null
+          } satisfies PhraseToken;
+        });
+
+        parsedBlocks.push({
+          kind: 'phrase',
+          phraseText: text,
+          tokens: phraseTokens
+        } as PhraseBlock);
+      } else {
+        parsedBlocks.push(block);
+      }
+    } else {
+      parsedBlocks.push(block);
+    }
+  }
+
+  return {
+    ...doc,
+    blocks: parsedBlocks
+  };
+};
 
 /**
  * POS-aware phrase resolver:
@@ -159,8 +327,28 @@ export function convertTemplateDocToUnified(doc: TemplateDoc): UnifiedTemplate {
       // Phrase blocks become subtemplate tokens
       const phraseBlock = block as PhraseBlock;
       const phraseTokens: TemplateToken[] = [];
-      
-      for (const token of phraseBlock.tokens) {
+      const phraseWords = phraseBlock.tokens;
+      for (let index = 0; index < phraseWords.length; index++) {
+        const token = phraseWords[index];
+
+        // Legacy chunk hydration inserted literal "-" separators between slot tokens.
+        // Skip them so realized output renders with natural spacing.
+        if (
+          !token.randomize &&
+          token.text === '-' &&
+          index > 0 &&
+          index < phraseWords.length - 1 &&
+          phraseWords[index - 1]?.randomize &&
+          phraseWords[index + 1]?.randomize
+        ) {
+          continue;
+        }
+
+        // Skip empty literals that can surface from parsing quirks.
+        if (!token.randomize && !token.text?.trim()) {
+          continue;
+        }
+
         if (token.randomize) {
           // Create a slot token
           const pos = token.pos || 'NOUN'; // fallback to NOUN

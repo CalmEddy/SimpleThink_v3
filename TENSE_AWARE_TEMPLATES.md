@@ -49,7 +49,7 @@ This implementation adds tense-aware template support to the SimpleThink system 
    - Enhanced template filling with morphological matching
    - Added fallback logic for when morphological features don't match
 
-6. **`src/components/TemplateEditor.tsx`**
+6. **`src/components/templateLab/TemplateLab.tsx`**
    - Added morphological POS options to the template editor
    - Extended POS_ORDER array with morphological variants
 

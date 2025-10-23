@@ -233,8 +233,7 @@ export function listTemplatesForUI(sessionId: string): (StoredTemplateV2 & { tex
   // quick guard: normalize once per read to avoid lingering broken entries
   // (no-op when already normalized)
   // Note: this is light work; it hydrates only when needed.
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  normalizeStoreInPlace(store);
+  void normalizeStoreInPlace(store);
   const main = (store.sessions[sessionId] ?? []).filter(t => hasRenderableBlocks(t.doc));
   const global = (store.sessions[GLOBAL_SESSION_ID] ?? []).filter(t => hasRenderableBlocks(t.doc));
   const byId = new Map<string, StoredTemplateV2>();

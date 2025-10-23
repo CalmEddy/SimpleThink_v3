@@ -13,7 +13,7 @@ import { parseTemplateTextToTokens, buildBindings } from './parseTemplateText.js
 import { realizeTemplate } from './fillTemplate.js';
 import { Prompter, mutatorJitter30, mutatorAutoBind, mutatorEnsure2Random, mutatorRandomizeNouns, type TemplateSource, type RNG } from './prompter/index.js';
 import { templateDocsFromGraph } from './prompter/unifiedSource.js';
-import { parseTextPatternsToUTA } from '../components/ComposerEditor.js';
+import { parseTextPatternsToUTA } from './composer.js';
 import { convertTemplateDocToUnified } from './composer.js';
 import { 
   UnifiedRandomizationService, 

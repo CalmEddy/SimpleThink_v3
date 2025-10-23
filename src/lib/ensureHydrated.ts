@@ -1,5 +1,5 @@
 import type { TemplateDoc, TemplateBlock, PhraseBlock, POS } from '../types/index.js';
-import { parseTextPatternsToUTA } from '../components/ComposerEditor.js';
+import { parseTextPatternsToUTA } from './composer.js';
 
 /**
  * Ensures a TemplateDoc is properly hydrated with phrase tokens.

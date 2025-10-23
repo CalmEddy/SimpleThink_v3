@@ -153,7 +153,6 @@ export default function ActiveNodesTool({ graph }: ActiveNodesToolProps) {
     // store N as df.get('__N__')
     df.set('__N__', N);
     return df;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph, config.methods.GLOVE_NEIGHBORHOOD.useIDF]);
 
   const lemmaPOS = useMemo(() => {

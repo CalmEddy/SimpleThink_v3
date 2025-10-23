@@ -6,6 +6,7 @@ export type TemplateRecord = {
   sessionId: string | null;   // current topic; null if global
   doc: TemplateDoc;           // hydrated: phrase-only
   displayText: string;        // quick preview, derived from doc
+  pinned?: boolean;           // user requested priority
   createdAt: string;
   updatedAt: string;
 };
@@ -110,7 +111,7 @@ async function dbQueryAll(): Promise<TemplateRecord[]> {
 
 // Main TemplateStore API
 export const TemplateStore = {
-  async save({ sessionId = null, text, doc }: { sessionId?: string | null; text?: string; doc?: TemplateDoc }): Promise<TemplateRecord> {
+  async save({ sessionId = null, text, doc, pinned = false }: { sessionId?: string | null; text?: string; doc?: TemplateDoc; pinned?: boolean }): Promise<TemplateRecord> {
     const id = crypto.randomUUID();
     const baseDoc = doc ?? { 
       id, 
@@ -124,13 +125,14 @@ export const TemplateStore = {
     }
     
     // Persist "global" as null so queries can match it consistently
-    const normalizedSessionId = normalizeForPersist(sessionId);
+    const normalizedSessionId = null;
     
     const rec: TemplateRecord = {
       id, 
       sessionId: normalizedSessionId, 
       doc: hydrated,
       displayText: docToQuickText(hydrated),
+      pinned: Boolean(pinned),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -159,7 +161,7 @@ export const TemplateStore = {
     return sorted;
   },
 
-  async update(id: string, patch: { text?: string; doc?: TemplateDoc; sessionId?: string | null }): Promise<TemplateRecord> {
+  async update(id: string, patch: { text?: string; doc?: TemplateDoc; sessionId?: string | null; pinned?: boolean }): Promise<TemplateRecord> {
     const prev = await dbGet(id);
     if (!prev) throw new Error('Not found');
     
@@ -176,13 +178,14 @@ export const TemplateStore = {
       throw new Error('Refusing to save empty template');
     }
     
-    const normalizedSessionId = normalizeForPersist(patch.sessionId ?? prev.sessionId);
+    const normalizedSessionId = null;
     
     const rec: TemplateRecord = {
       ...prev,
       sessionId: normalizedSessionId,
       doc: nextDoc,
       displayText: docToQuickText(nextDoc),
+      pinned: patch.pinned ?? prev.pinned ?? false,
       updatedAt: new Date().toISOString(),
     };
     

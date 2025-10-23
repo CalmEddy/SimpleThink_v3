@@ -4,7 +4,7 @@ import { surfaceRelatedPhrases } from '../lib/retrieve.js';
 import { createPromptFromPhrase } from '../lib/promptEngine.js';
 import { TEMPLATES } from '../lib/templates.js';
 import GraphViewer from './GraphViewer.jsx';
-import TemplateEditor from './TemplateEditor.jsx';
+import TemplateLab from './templateLab/TemplateLab';
 import { useActiveNodes } from '../contexts/ActiveNodesContext.js';
 import type { PhraseNode, PhraseChunk } from '../types/index.js';
 
@@ -418,7 +418,7 @@ export default function ExploreView({ graph, onGraphUpdate, onError }: ExploreVi
       {showEditor && (
         <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-sm">
           <div className="absolute inset-0 max-w-5xl mx-auto my-6 bg-background rounded-2xl shadow-xl overflow-hidden">
-            <TemplateEditor 
+            <TemplateLab 
               sessionId={contextFrame?.sessionId || 'default'} 
               onClose={() => setShowEditor(false)}
               graph={graph}
@@ -429,3 +429,4 @@ export default function ExploreView({ graph, onGraphUpdate, onError }: ExploreVi
     </div>
   );
 }
+

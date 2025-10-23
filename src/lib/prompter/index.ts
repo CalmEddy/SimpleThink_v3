@@ -1,4 +1,4 @@
-import { parseTextPatternsToUTA } from "../../components/ComposerEditor";
+import { parseTextPatternsToUTA } from "../composer.js";
 import { convertTemplateDocToUnified } from "../composer";
 import { realizeTemplate } from "../fillTemplate";
 import { wordBank } from "../templates.js";
