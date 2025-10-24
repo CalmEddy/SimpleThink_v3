@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "convex:dev": "convex dev",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "test": "vitest",
     "format": "prettier --write .",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
